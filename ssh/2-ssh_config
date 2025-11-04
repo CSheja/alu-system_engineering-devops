@@ -1,0 +1,4 @@
+# SSH client configuration for connecting to servers using the 'school' key
+Host *
+    IdentityFile ~/.ssh/school
+    PasswordAuthentication no
