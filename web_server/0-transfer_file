@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Transfers a file from the local client to a remote server
 
 # Check if exactly 4 arguments are provided
 if [ "$#" -ne 4 ]; then
@@ -12,18 +13,6 @@ IP="$2"
 USER="$3"
 KEY="$4"
 
-# Check if file exists
-if [ ! -f "$FILE" ]; then
-	    echo "Error: File '$FILE' does not exist."
-	        exit 1
-fi
-
-# Transfer the file using scp
+# Transfer the file to the remote server home directory
 scp -i "$KEY" -o StrictHostKeyChecking=no "$FILE" "$USER@$IP:~/"
-
-# Check if scp succeeded
-if [ "$?" -eq 0 ]; then
-	    echo "File '$FILE' successfully transferred to $USER@$IP:~/"
-    else
-	        echo "Error: File transfer failed."
-fi
+EOF
