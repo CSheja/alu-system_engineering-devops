@@ -1,26 +1,35 @@
 #!/usr/bin/env bash
-# Configures Nginx on a fresh Ubuntu machine to redirect /redirect_me to a given URL with HTTP 301
+# Configure Nginx to redirect /redirect_me to a YouTube link using HTTP 301
 
-# Exit immediately if any command fails
 set -e
 
-# Update package list and install nginx if not installed
+# Update package index and install nginx if not installed
 apt-get update -y
 apt-get install -y nginx
 
-# Ensure the default site config exists
-CONFIG_FILE="/etc/nginx/sites-available/default"
+# Ensure Nginx default site directory exists
+DEFAULT_CONF="/etc/nginx/sites-available/default"
 
-# Backup current config just in case
-cp $CONFIG_FILE "${CONFIG_FILE}.bak"
+# Overwrite the default config with a guaranteed working server block
+cat > $DEFAULT_CONF << 'EOF'
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
 
-# Remove any existing /redirect_me block and add the correct one
-# This sed command deletes old /redirect_me blocks
-sed -i '/location \/redirect_me {/,/}/d' $CONFIG_FILE
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
 
-# Add the /redirect_me redirect inside the server block
-sed -i '/server_name _;/a \\n\tlocation /redirect_me {\n\t\treturn 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;\n\t}' $CONFIG_FILE
+    server_name _;
 
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location /redirect_me {
+        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+    }
+}
+EOF
 # Test nginx config syntax
 nginx -t
 
