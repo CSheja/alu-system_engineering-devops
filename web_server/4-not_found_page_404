@@ -1,32 +1,37 @@
 #!/usr/bin/env bash
-# Configures nginx to show a custom 404 page containing "Ceci n'est pas une page"
-
 set -e
 
 NGINX_CONF="/etc/nginx/sites-available/default"
 NOTFOUND="/var/www/html/404.html"
 MSG="Ceci n'est pas une page"
 
-# 1. Install nginx if not already
+# 1. Install nginx if not present
 if ! dpkg -s nginx >/dev/null 2>&1; then
 	  apt-get update -y
 	    apt-get install -y nginx
 fi
 
-# 2. Create the required 404 page
-echo "$MSG" > "$NOTFOUND"
+mkdir -p /var/www/html
 
-# 3. Remove any existing error_page config (idempotent)
+# 2. Write page EXACTLY, with NO newline!
+echo -n "$MSG" > "$NOTFOUND"
+chmod 644 "$NOTFOUND"
+
+# 3. Ensure default_type is set for HTML
+if ! grep -q 'default_type text/html;' "$NGINX_CONF"; then
+	  sed -i '/http {/a \    default_type text/html;' "$NGINX_CONF"
+fi
+
+# 4. Remove any previous error_page lines
 sed -i '/error_page 404 \/404.html;/d' "$NGINX_CONF"
 
-# 4. Insert error_page inside the server block before the last }
+# 5. Insert error_page in server block before last }
 awk -v epage="    error_page 404 /404.html;\n" '
   BEGIN {in_server=0}
     /^server[ \t]*{/ {in_server=1}
-      in_server && /^\}/     {print epage; in_server=0}
+      in_server && /^\}/ {print epage; in_server=0}
         {print}
 	' "$NGINX_CONF" > /tmp/default.conf && mv /tmp/default.conf "$NGINX_CONF"
 
-	# 5. Reload nginx
 	nginx -t
 	service nginx restart
