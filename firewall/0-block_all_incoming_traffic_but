@@ -1,14 +1,27 @@
 #!/usr/bin/env bash
-# Configures UFW to allow only SSH (22), HTTP (80), and HTTPS (443)
+# This script configures ufw on web-01 to allow only SSH (22), HTTP (80), and HTTPS (443)
+# and deny all other incoming traffic.
 
-# Allow SSH
-ufw allow 22/tcp
+# Ensure ufw is installed
+sudo apt-get update -y
+sudo apt-get install -y ufw
 
-# Allow HTTP
-ufw allow 80/tcp
+# Reset ufw to default settings (this removes all existing rules)
+sudo ufw reset
 
-# Allow HTTPS
-ufw allow 443/tcp
+# Set default rules:
+# Deny incoming traffic by default
+sudo ufw default deny incoming
+# Allow outgoing traffic by default
+sudo ufw default allow outgoing
+
+# Allow incoming SSH (22), HTTP (80), and HTTPS (443)
+sudo ufw allow 22/tcp   # SSH
+sudo ufw allow 80/tcp   # HTTP
+sudo ufw allow 443/tcp  # HTTPS
 
 # Enable UFW
-ufw --force enable
+sudo ufw --force enable
+
+# Show ufw status (for verification)
+sudo ufw status verbose
