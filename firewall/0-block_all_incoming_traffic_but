@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Configures UFW to allow only SSH (22), HTTP (80), and HTTPS (443)
+
+# Allow SSH
+ufw allow 22/tcp
+
+# Allow HTTP
+ufw allow 80/tcp
+
+# Allow HTTPS
+ufw allow 443/tcp
+
+# Enable UFW
+ufw --force enable
